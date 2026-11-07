@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
-import ActionButton from "../components/common/ActionButton";
 
 const Settings = () => {
-  const { user, role } = useAppContext();
+  const { logout, theme, toggleTheme } = useAppContext();
   const [settings, setSettings] = useState({
-    darkMode: false,
     notifications: true,
     autoReview: true,
     aiDisclosure: true,
@@ -21,6 +19,17 @@ const Settings = () => {
     setToast({
       type: "success",
       message: `${key} updated`,
+      autoDismiss: true,
+    });
+  };
+
+  // The appearance checkbox reads and writes the one global theme state.
+  const handleThemeToggle = () => {
+    toggleTheme();
+
+    setToast({
+      type: "success",
+      message: `Theme set to ${theme === "dark" ? "light" : "dark"}`,
       autoDismiss: true,
     });
   };
@@ -54,8 +63,8 @@ const Settings = () => {
               <label className="flex items-center gap-2 text-sm font-medium">
                 <input
                   type="checkbox"
-                  checked={settings.darkMode}
-                  onChange={() => handleToggle("darkMode")}
+                  checked={theme === "dark"}
+                  onChange={handleThemeToggle}
                   className="rounded border-primary-500 focus:ring-primary-500"
                 />
                 Dark Mode
@@ -113,15 +122,7 @@ const Settings = () => {
           </p>
           
           <button
-            onClick={() => {
-              localStorage.removeItem("truthnuke-user");
-              localStorage.removeItem("truthnuke-role");
-              setToast({
-                type: "info",
-                message: "Session data cleared",
-                autoDismiss: true,
-              });
-            }}
+            onClick={logout}
             className="w-full py-2.5 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
           >
             Clear All Local Data
@@ -154,10 +155,24 @@ const Settings = () => {
           </dl>
           
           <p className="mt-4 text-xs text-muted-foreground">
-            Work already done: nothing — the turn failed before acting
+            AI suggests. Humans decide.
           </p>
         </div>
       </div>
+
+      {/* Toast area */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 flex items-start gap-3 bg-card border border-border rounded-lg p-4 shadow-lg max-w-sm transform transition-transform" style={{ transform: "translateY(0)" }}>
+          <p className="font-medium">{toast.message}</p>
+          <button
+            onClick={handleDismissToast}
+            className="ml-auto text-muted-foreground hover:opacity-80"
+            aria-label="Dismiss toast"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -120,25 +120,25 @@ const NewContent = () => {
         </div>
 
         <div>
-          <ActionButton
-            type="primary"
-            disabled={isSubmitting}
-            onClick={handleSubmit}
-          >
-            {isSubmitting ? "Submitting..." : "Submit for Review"}
-          </ActionButton>
-          <ActionButton
-            type="secondary"
-            onClick={() => setForm({ title: "", channel: "Blog", content: "" })}
-          >
-            Clear
-          </ActionButton>
+          <div className="flex gap-3">
+            <ActionButton
+              type="primary"
+              htmlType="submit"
+              disabled={isSubmitting}
+              text={isSubmitting ? "Submitting..." : "Submit for Review"}
+            />
+            <ActionButton
+              type="secondary"
+              text="Clear"
+              onClick={() => setForm({ title: "", channel: "Blog", content: "" })}
+            />
+          </div>
         </div>
       </form>
 
       {/* Toast area */}
       {toast && (
-        <div className="fixed top-4 right-4 bg-card border rounded-lg p-4 shadow-lg max-w-sm transform transition-transform" style={{ transform: "translateY(0)" }}>
+        <div className="fixed top-4 right-4 z-50 flex items-start gap-3 bg-card border border-border rounded-lg p-4 shadow-lg max-w-sm transform transition-transform" style={{ transform: "translateY(0)" }}>
           <p className="font-medium">{toast.message}</p>
           <button
             onClick={() => setToast(null)}

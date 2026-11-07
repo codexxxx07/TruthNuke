@@ -21,6 +21,24 @@ const SeverityTitles = {
   information: "Informational note",
 };
 
+const StatusColors = {
+  draft: "bg-slate-100 text-slate-700 border-slate-300",
+  pending: "bg-warning/10 text-warning border-warning",
+  "in-review": "bg-information/10 text-information border-information",
+  "changes-requested": "bg-error/10 text-error border-error",
+  approved: "bg-suggestion/10 text-suggestion border-suggestion",
+  rejected: "bg-error/10 text-error border-error",
+};
+
+const StatusLabels = {
+  draft: "Draft",
+  pending: "Pending",
+  "in-review": "In Review",
+  "changes-requested": "Changes Requested",
+  approved: "Approved",
+  rejected: "Rejected",
+};
+
 /**
  * StatusBadge - Display a finding's severity with color coding
  * @param {Object} props - The component props
@@ -28,13 +46,13 @@ const SeverityTitles = {
  * @param {string} [props.className] - Additional CSS classes
  */
 const StatusBadge = ({ severity, className }) => {
-  const baseClasses = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
-  const colorClass = SeverityColors[severity] || SeverityColors.information;
-  const label = SeverityLabels[severity] || "Information";
+  const baseClasses = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap";
+  const colorClass = SeverityColors[severity] || StatusColors[severity] || SeverityColors.information;
+  const label = SeverityLabels[severity] || StatusLabels[severity] || "Information";
 
   return (
-    <span className={`${baseClasses} ${colorClass} hover:opacity-80 ${className}`}>
-      <span className="align-middle" title={SeverityTitles[severity] || ""}>
+    <span className={`${baseClasses} ${colorClass} hover:opacity-80 ${className || ""}`}>
+      <span className="align-middle" title={SeverityTitles[severity] || label}>
         {label}
       </span>
     </span>

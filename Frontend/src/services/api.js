@@ -3,7 +3,10 @@
  * Handles mock API calls and localStorage persistence
  */
 
-const API_BASE = "https://api.truthnuke.com/v1";
+import { runReviewEngine } from "./reviewEngine";
+
+// Set user reference for the API module
+let user = null;
 
 // Mock content library - banned terms, preferred terminology, approved facts
 const MOCK_GUIDELINES = {
@@ -107,7 +110,7 @@ export const contentApi = {
       return reviewCache.get(cacheKey);
     }
 
-    const findings = runReviewEngine(contentText);
+    const findings = await runReviewEngine(contentText, MOCK_GUIDELINES);
     reviewCache.set(cacheKey, findings);
     return findings;
   },
@@ -139,9 +142,6 @@ export const contentApi = {
     });
   },
 };
-
-// Set user reference for the API module
-let user = null;
 
 export const setUserRef = (userRef) => {
   user = userRef;

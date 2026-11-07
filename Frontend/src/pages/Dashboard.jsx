@@ -1,12 +1,27 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
-import runReviewEngine from "../services/reviewEngine";
-import { MOCK_GUIDELINES } from "../data/seedData";
+import { runReviewEngine } from "../services/reviewEngine";
+import { MOCK_CONTENT, MOCK_GUIDELINES } from "../data/seedData";
 import { StatusBadge } from "../components/common/StatusBadge";
 import ActionButton from "../components/common/ActionButton";
 
+const severityBorderClass = (severity) => {
+  switch (severity) {
+    case "error":
+      return "border border-error/30";
+    case "warning":
+      return "border border-warning/30";
+    case "suggestion":
+      return "border border-suggestion/30";
+    default:
+      return "border border-information/30";
+  }
+};
+
 const Dashboard = () => {
-  const { user, role, logout } = useAppContext();
+  const { user } = useAppContext();
+  const navigate = useNavigate();
   const [contentItems, setContentItems] = useState([]);
   const [selectedContent, setSelectedContent] = useState(null);
   const [reviewResults, setReviewResults] = useState(null);
@@ -32,6 +47,7 @@ const Dashboard = () => {
   const handleRunReview = async (content) => {
     setIsRunningReview(true);
     setSelectedContent(content);
+    setReviewResults(null);
 
     try {
       const findings = await runReviewEngine(content.content, MOCK_GUIDELINES.sections);
@@ -53,7 +69,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleAcceptFix = (findingId, contentText) => {
+  const handleAcceptFix = () => {
     setToast({
       type: "success",
       message: "Fix accepted and applied",
@@ -64,7 +80,7 @@ const Dashboard = () => {
     setReviewResults(null);
   };
 
-  const handleRejectFix = (findingId) => {
+  const handleRejectFix = () => {
     setToast({
       type: "info",
       message: "Fix rejected, original text preserved",
@@ -86,31 +102,31 @@ const Dashboard = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-card border rounded-lg p-4">
+        <div className="bg-card border border-border rounded-lg p-4">
           <p className="text-muted-foreground text-sm">Total Content</p>
           <p className="text-2xl font-bold">{contentItems.length}</p>
         </div>
-        <div className="bg-card border rounded-lg p-4">
+        <div className="bg-card border border-border rounded-lg p-4">
           <p className="text-muted-foreground text-sm">Under Review</p>
           <p className="text-2xl font-bold">{contentItems.filter((c) => c.status === "pending").length}</p>
         </div>
-        <div className="bg-card border rounded-lg p-4">
+        <div className="bg-card border border-border rounded-lg p-4">
           <p className="text-muted-foreground text-sm">Approved</p>
           <p className="text-2xl font-bold">{contentItems.filter((c) => c.status === "approved").length}</p>
         </div>
       </div>
 
       {/* Action buttons */}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap gap-3">
         <ActionButton
           text="Create New Content"
           type="primary"
-          onClick={() => navigateTo("/new-content")}
+          onClick={() => navigate("/new-content")}
         />
         <ActionButton
           text="View Guidelines"
           type="secondary"
-          onClick={() => navigateTo("/guidelines")}
+          onClick={() => navigate("/guidelines")}
         />
       </div>
 
@@ -128,14 +144,14 @@ const Dashboard = () => {
             strokeLinejoin="round"
           >
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-            <line x1="3" y9="15" x2="15" y9="15" />
-            <line x1="9" y3="21" x2="21" y21="21" />
+            <line x1="3" y1="9" x2="15" y2="9" />
+            <line x1="9" y1="21" x2="21" y2="21" />
           </svg>
           <p className="mt-4 text-muted-foreground">No content items found</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-card rounded-lg overflow-hidden">
+          <table className="min-w-full bg-card rounded-lg overflow-hidden border border-border">
             <thead>
               <tr className="border-b border-border">
                 <th className="p-3 text-left text-xs font-medium text-foreground capitalize">Content</th>
@@ -154,8 +170,8 @@ const Dashboard = () => {
                   </td>
                   <td className="p-3 text-right">
                     <button
-                      onClick={() => setSelectedContent(item)}
-                      className="underline text-primary-600 hover underline-offset-2"
+                      onClick={() => handleRunReview(item)}
+                      className="underline text-primary-600 underline-offset-2 hover:text-primary-800"
                     >
                       Review
                     </button>
@@ -169,7 +185,7 @@ const Dashboard = () => {
 
       {/* Review results panel - shown when reviewing content */}
       {selectedContent && reviewResults && (
-        <div className="mt-6 bg-card rounded-lg p-6">
+        <div className="mt-6 bg-card rounded-lg p-6 border border-border">
           <h2 className="text-xl font-bold mb-4">Review Results</h2>
           <p className="text-muted-foreground mb-4">
             Analyzed: "{selectedContent.title}" - {reviewResults.length} findings
@@ -179,9 +195,9 @@ const Dashboard = () => {
             {reviewResults.map((finding) => (
               <div
                 key={finding.id}
-                className="p-3 rounded-lg border {finding.severity === 'error' ? 'border-error/20 text-error' : finding.severity === 'warning' ? 'border-warning/20 text-warning' : finding.severity === 'suggestion' ? 'border-suggestion/20 text-suggestion' : 'border-info/20 text-information'}"
+                className={`p-3 rounded-lg ${severityBorderClass(finding.severity)}`}
               >
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start mb-2 gap-3">
                   <span className="font-medium">{finding.snippet || finding.explanation}</span>
                   <StatusBadge severity={finding.severity} />
                 </div>
@@ -193,14 +209,13 @@ const Dashboard = () => {
                     text="Accept"
                     type="success"
                     size="sm"
-                    onClick={() => handleAcceptFix(finding.id, selectedContent.content)}
-                    disabled={true}
+                    onClick={() => handleAcceptFix(finding)}
                   />
                   <ActionButton
                     text="Reject"
                     type="danger"
                     size="sm"
-                    onClick={() => handleRejectFix(finding.id)}
+                    onClick={() => handleRejectFix(finding)}
                   />
                 </div>
               </div>
@@ -211,11 +226,11 @@ const Dashboard = () => {
 
       {/* Toast area */}
       {toast && (
-        <div className="fixed top-4 right-4 bg-card border rounded-lg p-4 shadow-lg max-w-sm transform transition-transform" style={{ transform: "translateY(0)" }}>
+        <div className="fixed top-4 right-4 z-50 flex items-start gap-3 bg-card border border-border rounded-lg p-4 shadow-lg max-w-sm transform transition-transform" style={{ transform: "translateY(0)" }}>
           <p className="font-medium">{toast.message}</p>
           <button
             onClick={handleDismissToast}
-            className="ml-auto text-muted-foreground hover opacity-80"
+            className="ml-auto text-muted-foreground hover:opacity-80"
             aria-label="Dismiss toast"
           >
             ✕

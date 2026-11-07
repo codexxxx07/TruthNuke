@@ -1,21 +1,30 @@
-import { 
-  LayoutDashboard, 
-  Folder, 
-  Plus, 
-  Eye, 
-  CheckSquare, 
+import {
+  LayoutDashboard,
+  Folder,
+  Plus,
+  Eye,
+  CheckSquare,
   Settings,
   LogOut as LogOutIcon
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 
+const PATH_BY_KEY = {
+  dashboard: "/",
+  guidelines: "/guidelines",
+  "new-content": "/new-content",
+  "content-review": "/content-review",
+  approval: "/approval",
+  settings: "/settings",
+};
+
 /**
  * Sidebar - Navigation sidebar with active route highlighting
  * Supports role-based visibility
  */
 const Sidebar = () => {
-  const { role, user } = useAppContext();
+  const { role } = useAppContext();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -29,32 +38,8 @@ const Sidebar = () => {
     { key: "settings", label: "Settings", icon: Settings, role: "all" },
   ];
 
-  const isActive = (key) => {
-    const path = location.pathname.split("?")[0];
-    // Match exact paths
-    const exactPaths = {
-      dashboard: "/",
-      guidelines: "/guidelines",
-      new-content: "/new-content",
-      contentReview: "/content-review",
-      approval: "/approval",
-      settings: "/settings",
-    };
-    return path === exactPaths[key];
-  };
-
-  const handleClick = (key) => {
-    const pathMap = {
-      dashboard: "/",
-      guidelines: "/guidelines",
-      new-content: "/new-content",
-      contentReview: "/content-review",
-      approval: "/approval",
-      settings: "/settings",
-    };
-    const path = pathMap[key];
-    if (path) navigate(path);
-  };
+  const currentPath = location.pathname.replace(/\/+$/, "") || "/";
+  const isActive = (key) => currentPath === PATH_BY_KEY[key];
 
   // Check if user has role to see this item
   const hasRole = (itemRole) => {
@@ -74,8 +59,10 @@ const Sidebar = () => {
               <path d="M6 12l3 6l6-4 2 3l-7 2-5-5l5-3z" />
             </svg>
           </div>
-          <span className="text-sm font-medium capitalize">Truth Nuke</span>
-          <span className="text-xs text-muted-foreground">v2.3</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-sm font-medium capitalize">Truth Nuke</span>
+            <span className="text-xs text-muted-foreground">v2.3</span>
+          </div>
         </div>
 
         {/* Navigation items */}
@@ -85,22 +72,20 @@ const Sidebar = () => {
               // Skip items user doesn't have role for
               if (!hasRole(item.role)) return null;
 
-              const isActive = location.pathname.split("?")[0] === `/${item.key}`;
+              const Icon = item.icon;
+              const active = isActive(item.key);
 
               return (
                 <li key={item.key}>
                   <button
-                    onClick={() => handleClick(item.key)}
-                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all cursor-pointer ${isActive 
+                    onClick={() => navigate(PATH_BY_KEY[item.key])}
+                    className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all cursor-pointer ${active
                       ? "bg-primary-100 text-primary-800 border border-primary-200"
                       : "text-foreground hover:bg-primary-50 hover:text-primary-600"}
                     }`}
-                    aria-current={isActive ? "page" : "false"}
+                    aria-current={active ? "page" : undefined}
                   >
-                    <icon
-                      className="h-5 w-5"
-                      {...item.icon}
-                    />
+                    <Icon className="h-5 w-5" />
                     <span>{item.label}</span>
                   </button>
                 </li>
@@ -109,7 +94,7 @@ const Sidebar = () => {
           </ul>
         </nav>
 
-        {/* Divider and logout at bottom */}
+        {/* Divider and dashboard shortcut at bottom */}
         <div className="mt-6 pt-6 border-t border-border">
           <button
             onClick={() => navigate("/")}

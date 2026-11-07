@@ -1,5 +1,6 @@
 import { Menu, LogOut, User } from "lucide-react";
 import { useAppContext } from "../../context/AppContext";
+import ThemeToggle from "../common/ThemeToggle";
 
 /**
  * Header - Application header with user menu and role info
@@ -35,6 +36,8 @@ const Header = () => {
 
         {/* Right: User menu */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+
           {user && (
             <div className="flex items-center gap-2">
               <User className="h-6 w-6 text-foreground" />

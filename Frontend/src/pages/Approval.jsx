@@ -1,9 +1,22 @@
 import { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
-import { MOCK_GUIDELINES } from "../data/seedData";
+import { MOCK_CONTENT, MOCK_GUIDELINES } from "../data/seedData";
 import { runReviewEngine } from "../services/reviewEngine";
 import { StatusBadge } from "../components/common/StatusBadge";
 import ActionButton from "../components/common/ActionButton";
+
+const severityBorderClass = (severity) => {
+  switch (severity) {
+    case "error":
+      return "border border-error/30";
+    case "warning":
+      return "border border-warning/30";
+    case "suggestion":
+      return "border border-suggestion/30";
+    default:
+      return "border border-information/30";
+  }
+};
 
 const Approval = () => {
   const { user, role } = useAppContext();
@@ -184,7 +197,9 @@ const Approval = () => {
       {statuses.map((s) => (
         <div
           key={s}
-          className={approvalStatus === s ? statusClassMap[s] : "flex-1 rounded-full h-8 bg-border"}
+          className={`flex-1 h-8 flex items-center justify-center rounded-full ${
+            approvalStatus === s ? statusClassMap[s] : "bg-border"
+          }`}
         >
           <span className="text-xs font-semibold capitalize">{s}</span>
         </div>
@@ -243,12 +258,10 @@ const Approval = () => {
         </div>
       );
     }
-    if (role === "reviewer") {
+    if (role === "creator") {
       return (
         <div className="mt-6 pt-6 border-t border-border">
-          <ActionButton type="secondary" onClick={handleSubmitForApproval}>
-            Submit for Approval
-          </ActionButton>
+          <ActionButton text="Submit for Approval" type="secondary" onClick={handleSubmitForApproval} />
         </div>
       );
     }
@@ -275,9 +288,11 @@ const Approval = () => {
               <button
                 key={item.id}
                 onClick={() => setSelectedContent(item)}
-                className={approvalStatus === "draft"
-                  ? "w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all cursor-pointer bg-primary-600 text-primary-foreground"
-                  : "w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all cursor-pointer text-foreground hover:bg-primary-50"}
+                className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all cursor-pointer ${
+                  selectedContent?.id === item.id
+                    ? "bg-primary-600 text-primary-foreground"
+                    : "text-foreground hover:bg-primary-50"}
+                `}
               >
                 <span className="flex-1 truncate">{item.title}</span>
                 <span className="text-primary-500">{item.channel}</span>
@@ -306,15 +321,7 @@ const Approval = () => {
                   {reviewResults.map((finding) => (
                     <div
                       key={finding.id}
-                      className={
-                        finding.severity === "error"
-                          ? "border-error/20"
-                          : finding.severity === "warning"
-                            ? "border-warning/20"
-                            : finding.severity === "suggestion"
-                              ? "border-suggestion/20"
-                              : "border-info/20"
-                      }
+                      className={`rounded-lg p-2 ${severityBorderClass(finding.severity)}`}
                     >
                       <span className="text-xs font-medium">
                         {finding.type}: {finding.snippet || finding.explanation}
@@ -365,7 +372,7 @@ const Approval = () => {
       )}
 
       {toast && (
-        <div className="fixed top-4 right-4 bg-card border rounded-lg p-4 shadow-lg max-w-sm" style={{ transform: "translateY(0)" }}>
+        <div className="fixed top-4 right-4 z-50 flex items-start gap-3 bg-card border border-border rounded-lg p-4 shadow-lg max-w-sm" style={{ transform: "translateY(0)" }}>
           <p className="font-medium">{toast.message}</p>
           <button
             onClick={handleDismissToast}

@@ -1,24 +1,82 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { MOCK_USERS } from "../data/seedData";
 
-const AppContext = createContext({ user: null, role: null });
+const AppContext = createContext({ user: null, role: null, theme: "light" });
+
+const THEME_KEY = "truthnuke-theme";
+const THEME_TRANSITION_MS = 320;
+
+const readStoredUser = () => {
+  try {
+    const stored = localStorage.getItem("truthnuke-user");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Light is the default for first-time visitors; only an explicit "dark" opts in. */
+const readStoredTheme = () => {
+  try {
+    return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+};
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export const AppContextProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem("truthnuke-user");
-    if (stored) return JSON.parse(stored);
-    return { user: null, role: null };
-  });
+  const [user, setUser] = useState(readStoredUser);
+  const [role, setRole] = useState(() => localStorage.getItem("truthnuke-role") || null);
+  const [theme, setTheme] = useState(readStoredTheme);
+  const transitionTimer = useRef(null);
 
-  const [role, setRole] = useState(() => {
-    const stored = localStorage.getItem("truthnuke-role");
-    if (stored) return stored;
-    return { user: null, role: null };
-  });
+  // Single source of truth: every route reads this state and <html> mirrors it.
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {
+      /* storage may be unavailable (private mode) - the theme still works in-session */
+    }
+  }, [theme]);
 
-  const login = (userId, userRole) => {
-    setUser({ id: userId, name: getNameForRole(userRole), role: userRole });
+  useEffect(() => () => clearTimeout(transitionTimer.current), []);
+
+  const toggleTheme = useCallback(() => {
+    if (!prefersReducedMotion()) {
+      const root = document.documentElement;
+      root.classList.add("theme-transition");
+      clearTimeout(transitionTimer.current);
+      transitionTimer.current = setTimeout(
+        () => root.classList.remove("theme-transition"),
+        THEME_TRANSITION_MS + 40
+      );
+    }
+    setTheme((current) => (current === "dark" ? "light" : "dark"));
+  }, []);
+
+  const login = (displayName, userRole) => {
+    const profile = MOCK_USERS[userRole] || {
+      id: `user-${userRole}`,
+      name: "Guest",
+      email: "",
+    };
+
+    const authenticatedUser = {
+      id: profile.id,
+      name: (displayName && displayName.trim()) || profile.name,
+      email: profile.email,
+      role: userRole,
+    };
+
+    setUser(authenticatedUser);
     setRole(userRole);
-    localStorage.setItem("truthnuke-user", JSON.stringify({ id: userId, name: getNameForRole(userRole), role: userRole }));
+    localStorage.setItem("truthnuke-user", JSON.stringify(authenticatedUser));
     localStorage.setItem("truthnuke-role", userRole);
   };
 
@@ -29,21 +87,8 @@ export const AppContextProvider = ({ children }) => {
     localStorage.removeItem("truthnuke-role");
   };
 
-  const getNameForRole = (role) => {
-    switch (role) {
-      case "creator":
-        return "Alex Chen";
-      case "manager":
-        return "Sarah Johnson";
-      case "reviewer":
-        return "Michael Zhang";
-      default:
-        return "Guest";
-    }
-  };
-
   return (
-    <AppContext.Provider value={{ user, role, login, logout }}>
+    <AppContext.Provider value={{ user, role, login, logout, theme, toggleTheme }}>
       {children}
     </AppContext.Provider>
   );

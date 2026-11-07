@@ -2,27 +2,27 @@
   "name": "frontend",
   "version": "1.0.0",
   "description": "Truth Nuke - Brand Governance and Content Quality Assurance Platform",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "dev": "concurrently \"npx vite\" \"npx tailwindcss -w src/styles/input.css -o src/styles/output.css\"",
-    "dev:css": "npx tailwindcss -w src/styles/input.css -o src/styles/output.css",
-    "build:css": "npx tailwindcss -i src/styles/input.css -o src/styles/output.css",
-    "build": "npx vite build",
-    "preview": "npx vite preview"
+    "dev": "npm run build:css && concurrently -k -n vite,css -c blue,green \"vite\" \"npm:dev:css\"",
+    "dev:css": "tailwindcss -i ./src/styles/input.css -o ./src/styles/output.css --watch",
+    "build:css": "tailwindcss -i ./src/styles/input.css -o ./src/styles/output.css --minify",
+    "build": "npm run build:css && vite build",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "lucide-react": "^1.70.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-router-dom": "^7.18.5",
-    "tailwindcss": "^4.3.4"
+    "react-router-dom": "^7.18.5"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^6.2.1",
     "concurrently": "^10.0.6",
+    "tailwindcss": "^3.4.19",
     "vite": "^8.3.6"
   }
 }

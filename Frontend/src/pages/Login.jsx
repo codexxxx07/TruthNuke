@@ -1,14 +1,9 @@
 import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
+import ThemeToggle from "../components/common/ThemeToggle";
 
 const Login = () => {
-  const { login, user, role } = useAppContext();
-  
-  // If already logged in, redirect to dashboard
-  if (user) {
-    return null;
-  }
-
+  const { login } = useAppContext();
   const [name, setName] = useState("");
   const [selectedRole, setSelectedRole] = useState("creator");
 
@@ -26,23 +21,23 @@ const Login = () => {
               <path d="M6 12l3 6l6-4 2 3l-7 2-5-5l5-3z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Truth Nuke</h1>
+          <h1 className="text-2xl font-bold tracking-tight motion-safe:animate-title-in">Truth Nuke</h1>
+          <ThemeToggle />
         </div>
 
         <div className="mb-4">
-          <p className="text-muted-foreground text-sm mb-2">Select your role to begin:</p>
-          <p className="text-lg font-medium capitalize">{selectedRole}</p>
+          <p className="text-muted-foreground text-base">Select your role to begin:</p>
         </div>
 
         {/* Role cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <button
             onClick={() => setSelectedRole("creator")}
-            className={`rounded-xl px-4 py-3 text-left transition-all cursor-pointer ${
+            className={`rounded-xl px-4 py-3 border flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ease-out hover:shadow-soft-lg active:shadow-soft motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 ${
               selectedRole === "creator"
-                ? "bg-primary-100 text-primary-800 border border-primary-200"
-                : "text-foreground hover:bg-primary-50"}
-            }`}
+                ? "bg-primary-100 text-primary-800 border-primary-200 shadow-soft"
+                : "border-transparent text-foreground hover:bg-primary-50 hover:border-primary-200"}
+            `}
             aria-pressed={selectedRole === "creator"}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -51,18 +46,18 @@ const Login = () => {
               <circle cx="12" cy="12" r="10" />
             </svg>
             <div className="mt-2">
-              <span className="font-medium">Creator</span>
-              <span className="text-xs text-muted-foreground">Create and review content</span>
+              <span className="block font-medium">Creator</span>
+              <span className="block text-xs text-muted-foreground sm:min-h-[3rem]">Create and review content</span>
             </div>
           </button>
 
           <button
             onClick={() => setSelectedRole("manager")}
-            className={`rounded-xl px-4 py-3 text-left transition-all cursor-pointer ${
+            className={`rounded-xl px-4 py-3 border flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ease-out hover:shadow-soft-lg active:shadow-soft motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 ${
               selectedRole === "manager"
-                ? "bg-primary-100 text-primary-800 border border-primary-200"
-                : "text-foreground hover:bg-primary-50"}
-            }`}
+                ? "bg-primary-100 text-primary-800 border-primary-200 shadow-soft"
+                : "border-transparent text-foreground hover:bg-primary-50 hover:border-primary-200"}
+            `}
             aria-pressed={selectedRole === "manager"}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -71,26 +66,26 @@ const Login = () => {
               <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
             <div className="mt-2">
-              <span className="font-medium">Manager</span>
-              <span className="text-xs text-muted-foreground">Monitor team and approve content</span>
+              <span className="block font-medium">Manager</span>
+              <span className="block text-xs text-muted-foreground sm:min-h-[3rem]">Monitor team and approve content</span>
             </div>
           </button>
 
           <button
             onClick={() => setSelectedRole("reviewer")}
-            className={`rounded-xl px-4 py-3 text-left transition-all cursor-pointer ${
+            className={`rounded-xl px-4 py-3 border flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ease-out hover:shadow-soft-lg active:shadow-soft motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 ${
               selectedRole === "reviewer"
-                ? "bg-primary-100 text-primary-800 border border-primary-200"
-                : "text-foreground hover:bg-primary-50"}
-            }`}
+                ? "bg-primary-100 text-primary-800 border-primary-200 shadow-soft"
+                : "border-transparent text-foreground hover:bg-primary-50 hover:border-primary-200"}
+            `}
             aria-pressed={selectedRole === "reviewer"}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
             <div className="mt-2">
-              <span className="font-medium">Reviewer</span>
-              <span className="text-xs text-muted-foreground">Review and approve content</span>
+              <span className="block font-medium">Reviewer</span>
+              <span className="block text-xs text-muted-foreground sm:min-h-[3rem]">Review and approve content</span>
             </div>
           </button>
         </div>
@@ -122,7 +117,7 @@ const Login = () => {
         )}
 
         <p className="text-xs text-muted-foreground mt-4 text-center">
-          {user && `Logged in as ${user.name} (${user.role})`}
+          AI suggests. Humans decide.
         </p>
       </div>
     </div>

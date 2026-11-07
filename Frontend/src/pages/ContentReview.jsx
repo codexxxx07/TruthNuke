@@ -1,12 +1,42 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
-import { MOCK_GUIDELINES } from "../data/seedData";
-import runReviewEngine from "../services/reviewEngine";
+import { MOCK_CONTENT, MOCK_GUIDELINES } from "../data/seedData";
+import { runReviewEngine } from "../services/reviewEngine";
 import { StatusBadge } from "../components/common/StatusBadge";
 import ActionButton from "../components/common/ActionButton";
 
+const severityBorderClass = (severity) => {
+  switch (severity) {
+    case "error":
+      return "border border-error/30";
+    case "warning":
+      return "border border-warning/30";
+    case "suggestion":
+      return "border border-suggestion/30";
+    default:
+      return "border border-information/30";
+  }
+};
+
+const findingLabel = (type) => {
+  switch (type) {
+    case "bannedTerm":
+      return "Banned Term";
+    case "preferredTerminology":
+      return "Preferred Terminology";
+    case "unsupportedClaim":
+      return "Unsupported Claim";
+    case "tone":
+      return "Tone Issue";
+    case "accessibility":
+      return "Accessibility";
+    default:
+      return "Issue";
+  }
+};
+
 const ContentReview = () => {
-  const { user, role } = useAppContext();
+  const { user } = useAppContext();
   const [contentItems, setContentItems] = useState([]);
   const [selectedContent, setSelectedContent] = useState(null);
   const [reviewResults, setReviewResults] = useState(null);
@@ -72,7 +102,7 @@ const ContentReview = () => {
     setActiveFinding(null);
   };
 
-  const handleRejectFix = (finding) => {
+  const handleRejectFix = () => {
     setToast({
       type: "info",
       message: "Fix rejected, original text preserved",
@@ -128,7 +158,7 @@ const ContentReview = () => {
                   selectedContent?.id === item.id
                     ? "bg-primary-600 text-primary-foreground"
                     : "text-foreground hover:bg-primary-50"}
-                }`}
+                `}
               >
                 <span className="flex-1 truncate">{item.title}</span>
                 <span className="text-primary-500">{item.channel}</span>
@@ -140,8 +170,8 @@ const ContentReview = () => {
 
       {/* Review panel - shown when content is selected */}
       {selectedContent && (
-        <div className="grid lg:grid-[2_1fr] gap-6">
-          
+        <div className="grid lg:grid-cols-2 gap-6">
+
           {/* Main Content Panel */}
           <div>
             {selectedContent.title && (
@@ -150,7 +180,7 @@ const ContentReview = () => {
                 <p className="text-sm text-muted-foreground">{selectedContent.channel}</p>
               </div>
             )}
-            
+
             <div className="bg-muted-foreground/10 rounded-lg p-4 mb-4">
               <p className="text-muted-foreground">{selectedContent.content || "No content available"}</p>
             </div>
@@ -159,8 +189,8 @@ const ContentReview = () => {
             {reviewResults && activeFinding && reviewResults.length > 0 && (
               <div className="mt-4">
                 <p className="text-xs text-muted-foreground mb-2">Active issue:</p>
-                <div className={`p-3 rounded-lg ${activeFinding.severity === 'error' ? 'border-error/20 text-error' : activeFinding.severity === 'warning' ? 'border-warning/20 text-warning' : 'border-suggestion/20 text-suggestion'}`}>
-                  <span 
+                <div className={`p-3 rounded-lg ${severityBorderClass(activeFinding.severity)}`}>
+                  <span
                     onClick={() => handleScrollToFinding(activeFinding)}
                     className="cursor-pointer underline text-primary-600 hover:underline-offset-2"
                   >
@@ -174,31 +204,29 @@ const ContentReview = () => {
           {/* Findings Panel */}
           <div className="space-y-4">
             {reviewResults && reviewResults.length > 0 ? (
-              <div>
+              <div className="space-y-4">
                 {reviewResults.map((finding) => (
                   <div
                     key={finding.id}
-                    className="p-4 rounded-lg border {finding.severity === 'error' ? 'border-error/20' : finding.severity === 'warning' ? 'border-warning/20' : finding.severity === 'suggestion' ? 'border-suggestion/20' : 'border-info/20'} hover:transition-colors cursor-pointer"
+                    className={`p-4 rounded-lg bg-card ${severityBorderClass(finding.severity)} cursor-pointer`}
                     onClick={() => setActiveFinding(finding)}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span className="font-medium text-sm">
-                        {finding.type === 'bannedTerm' ? 'Banned Term' : 
-                        finding.type === 'preferredTerminology' ? 'Preferred Terminology' : 
-                        finding.type === 'unsupportedClaim' ? 'Unsupported Claim' : 
-                        finding.type === 'tone' ? 'Tone Issue' : 
-                        finding.type === 'accessibility' ? 'Accessibility' : 'Issue'}
+                        {findingLabel(finding.type)}
                       </span>
                       <StatusBadge severity={finding.severity} />
                     </div>
-                    
+
                     <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
                       {finding.explanation}
                     </p>
-                    
-                    <div className="flex gap-3 pt-b border-t border-border pt-3">
-                      <span className="text-xs text-muted-foreground">Line {finding.start + 1}-{finding.end}</span>
-                      
+
+                    <div className="flex gap-3 border-t border-border pt-3">
+                      <span className="text-xs text-muted-foreground">
+                        Chars {finding.start}-{finding.end}
+                      </span>
+
                       <div>
                         <svg
                           width="14"
@@ -215,19 +243,19 @@ const ContentReview = () => {
                         <span className="text-xs text-muted-foreground ml-1">AI-assisted</span>
                       </div>
                     </div>
-                    
+
                     {/* Source guideline reference */}
                     <div className="mt-3 p-3 rounded-lg bg-primary-50">
                       <p className="text-xs font-medium text-primary-600">Source: <span className="underline text-primary-600 cursor-pointer">Banned Terms Policy</span></p>
                       <p className="text-xs text-muted-foreground">{finding.explanation}</p>
                     </div>
-                    
+
                     {/* Suggested correction */}
                     <div className="mt-3 p-3 rounded-lg bg-primary-50/50">
                       <p className="text-xs font-medium mb-1">Suggested Correction:</p>
                       <p className="text-sm font-medium">{finding.suggestedFix || "No suggestion available"}</p>
                     </div>
-                    
+
                     {/* Accept/Reject buttons */}
                     <div className="mt-3 flex gap-2">
                       <ActionButton
@@ -245,9 +273,15 @@ const ContentReview = () => {
                     </div>
                   </div>
                 ))}
+
+                {/* Batch actions */}
+                <div className="flex gap-2">
+                  <ActionButton text="Accept All" type="success" onClick={handleAcceptAll} />
+                  <ActionButton text="Reject All" type="danger" onClick={handleRejectAll} />
+                </div>
               </div>
             ) : (
-              <div className="p-6 text-center">
+              <div className="p-6 text-center bg-card rounded-lg border border-border">
                 <svg
                   width="48"
                   height="48"
@@ -259,17 +293,19 @@ const ContentReview = () => {
                   strokeLinejoin="round"
                 >
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <line x1="3" y9="15" x2="15" y9="15" />
-                  <line x1="9" y3="21" x2="21" y21="21" />
+                  <line x1="3" y1="9" x2="15" y2="9" />
+                  <line x1="9" y1="21" x2="21" y2="21" />
                 </svg>
                 <p className="mt-4 text-muted-foreground">Run a review to see findings</p>
-                <ActionButton
-                  type="primary"
-                  onClick={() => handleRunReview(selectedContent)}
-                  disabled={!selectedContent}
-                >
-                  Run Review
-                </ActionButton>
+                <div className="mt-4 flex justify-center">
+                  <ActionButton
+                    type="primary"
+                    onClick={() => handleRunReview(selectedContent)}
+                    disabled={!selectedContent}
+                  >
+                    Run Review
+                  </ActionButton>
+                </div>
               </div>
             )}
           </div>
@@ -278,11 +314,11 @@ const ContentReview = () => {
 
       {/* Toast area */}
       {toast && (
-        <div className="fixed top-4 right-4 bg-card border rounded-lg p-4 shadow-lg max-w-sm transform transition-transform" style={{ transform: "translateY(0)" }}>
+        <div className="fixed top-4 right-4 z-50 flex items-start gap-3 bg-card border border-border rounded-lg p-4 shadow-lg max-w-sm transform transition-transform" style={{ transform: "translateY(0)" }}>
           <p className="font-medium">{toast.message}</p>
           <button
             onClick={handleDismissToast}
-            className="ml-auto text-muted-foreground hover opacity-80"
+            className="ml-auto text-muted-foreground hover:opacity-80"
             aria-label="Dismiss toast"
           >
             ✕

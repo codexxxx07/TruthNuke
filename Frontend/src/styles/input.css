@@ -1,3 +1,143 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* Surfaces (RGB channel triples so Tailwind opacity modifiers keep working) */
+    --tn-background: 233 247 253;
+    --tn-foreground: 11 58 74;
+    --tn-card: 255 255 255;
+    --tn-border: 191 227 242;
+    --tn-muted-foreground: 74 122 140;
+    --tn-bg: 255 255 255;
+
+    /* Semantic states */
+    --tn-destructive: 220 38 38;
+    --tn-error: 185 28 28;
+    --tn-warning: 161 98 7;
+    --tn-suggestion: 21 128 61;
+    --tn-information: 29 78 216;
+  }
+
+  /* Dark theme: deep teal surfaces (never pure black) that keep the aqua brand feel */
+  .dark {
+    color-scheme: dark;
+
+    --tn-background: 8 22 30;
+    --tn-foreground: 226 244 250;
+    --tn-card: 15 35 45;
+    --tn-border: 32 68 83;
+    --tn-muted-foreground: 148 184 197;
+    --tn-bg: 255 255 255;
+
+    --tn-destructive: 248 150 150;
+    --tn-error: 248 150 150;
+    --tn-warning: 240 200 110;
+    --tn-suggestion: 126 224 166;
+    --tn-information: 147 178 255;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Form fields follow the theme surface instead of the UA's default fill */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    background-color: transparent;
+    color: inherit;
+  }
+
+  ::selection {
+    @apply bg-primary-200 text-primary-900;
+  }
+
+  /* Only active for ~320ms while the theme swaps, so the repaint stays smooth
+     without leaving a permanent transition on every element. */
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition:
+      background-color 300ms ease,
+      border-color 300ms ease,
+      color 300ms ease,
+      fill 300ms ease,
+      stroke 300ms ease,
+      box-shadow 300ms ease !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.theme-transition,
+    html.theme-transition *,
+    html.theme-transition *::before,
+    html.theme-transition *::after {
+      transition: none !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Dark-mode tuning for the pastel accent utilities used across the app */
+  .dark .bg-primary-50 {
+    background-color: #12313d;
+  }
+
+  .dark .bg-primary-50\/50 {
+    background-color: rgb(18 49 61 / 0.5);
+  }
+
+  .dark .hover\:bg-primary-50:hover {
+    background-color: #12313d;
+  }
+
+  .dark .bg-primary-100 {
+    background-color: #15404f;
+  }
+
+  .dark .border-primary-200 {
+    border-color: #276b80;
+  }
+
+  .dark .hover\:border-primary-200:hover {
+    border-color: #276b80;
+  }
+
+  .dark .text-primary-600 {
+    color: #7cd2fc;
+  }
+
+  .dark .hover\:text-primary-600:hover {
+    color: #a5e3fd;
+  }
+
+  .dark .text-primary-800 {
+    color: #bfe9fb;
+  }
+
+  .dark .hover\:text-primary-800:hover {
+    color: #e2f5fd;
+  }
+
+  .dark .bg-slate-100 {
+    background-color: #1b3a46;
+  }
+
+  .dark .text-slate-700 {
+    color: #cfe3ea;
+  }
+
+  .dark .border-slate-300 {
+    border-color: #2d5767;
+  }
+}
